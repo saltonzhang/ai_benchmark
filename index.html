@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ModelScope Lab | AI 模型性能检测</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">ML</span>
+      <div>
+        <strong>ModelScope Lab</strong>
+        <span>AI 模型接口性能检测</span>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="主导航">
+      <button class="tab is-active" data-page="single">单次跑测</button>
+      <button class="tab" data-page="compare">双端对比</button>
+      <button class="tab" data-page="history">历史记录</button>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-btn" id="themeBtn" title="切换主题">◐</button>
+      <button class="btn" id="exportBtn">导出报告</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="page is-active" id="single">
+      <aside class="panel config-panel">
+        <div class="panel-head">
+          <h2>测试配置</h2>
+          <span class="chip" id="progressChip">0 / 12</span>
+        </div>
+        <label>Base URL
+          <input id="baseUrl" type="password" placeholder="https://api.example.com/v1">
+        </label>
+        <label>API Key
+          <input id="apiKey" type="password" placeholder="仅建议使用测试 Key">
+        </label>
+        <label>模型 ID
+          <input id="modelId" placeholder="gpt-4.1 / qwen-max / deepseek-chat">
+        </label>
+        <div class="grid-2">
+          <label>轮次
+            <input id="rounds" type="number" min="1" max="5" value="1">
+          </label>
+          <label>超时(秒)
+            <input id="timeout" type="number" min="10" max="180" value="45">
+          </label>
+        </div>
+        <label>题库
+          <select id="probeMode">
+            <option value="standard">标准验收题（17题）</option>
+            <option value="ability">能力补测题（12题）</option>
+            <option value="random">随机抽样题（12题池抽10题）</option>
+            <option value="all">完整全量题库（41题）</option>
+          </select>
+        </label>
+        <label>系统提示词
+          <textarea id="systemPrompt" rows="4">你是一个严格、准确、简洁的 AI 助手。请优先遵守用户要求的输出格式。</textarea>
+        </label>
+        <div class="button-row">
+          <button class="btn primary" id="runBtn">开始跑测</button>
+          <button class="btn danger" id="clearBtn">清空结果</button>
+        </div>
+        <p class="hint"></p>
+      </aside>
+
+      <section class="workspace">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>探针题库</h2>
+            <span class="chip muted" id="activeProbeLabel">请选择探针</span>
+          </div>
+          <div class="probe-list" id="probeList"></div>
+        </div>
+
+        <div class="panel probe-panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="probeTitle">等待开始</h2>
+              <p id="probeMeta">运行后会显示每个探针的模型回复、耗时、Token 估算和判定。</p>
+            </div>
+            <span class="chip" id="probeStatus">未运行</span>
+          </div>
+          <div class="prompt-box" id="promptBox">从左侧配置接口后点击“开始跑测”。</div>
+          <div class="answer-box" id="answerBox">暂无模型输出</div>
+          <div class="checks" id="checks"></div>
+        </div>
+      </section>
+
+      <aside class="panel verdict-panel">
+        <div class="panel-head">
+          <h2>验收结论</h2>
+          <span class="chip" id="riskChip">待评估</span>
+        </div>
+        <div class="score-ring">
+          <div><strong id="scoreText">--</strong><span>综合分</span></div>
+        </div>
+        <div class="metric-grid">
+          <div><strong id="latencyText">--</strong><span>平均首包</span></div>
+          <div><strong id="passText">0%</strong><span>通过率</span></div>
+          <div><strong id="modelEcho">--</strong><span>响应模型</span></div>
+          <div><strong id="tokenText">--</strong><span>Token 估算</span></div>
+        </div>
+        <div class="diagnosis">
+          <h3>诊断分析</h3>
+          <p id="diagnosisText">完成至少 4 个探针后生成接口质量判断。</p>
+          <ul id="signalList"></ul>
+        </div>
+        <div class="run-log" id="runLog">运行日志会显示在这里。</div>
+      </aside>
+    </section>
+
+    <section class="page" id="compare">
+      <div class="compare-grid">
+        <section class="panel">
+          <div class="panel-head"><h2>A 端：待测节点</h2></div>
+          <label>Base URL<input id="baseA" type="password" placeholder="https://api.vendor-a.com/v1"></label>
+          <label>API Key<input id="keyA" type="password"></label>
+          <label>模型 ID<input id="modelA" placeholder="model-a"></label>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><h2>B 端：可信基线</h2></div>
+          <label>Base URL<input id="baseB" type="password" placeholder="https://api.vendor-b.com/v1"></label>
+          <label>API Key<input id="keyB" type="password"></label>
+          <label>模型 ID<input id="modelB" placeholder="model-b"></label>
+          <button class="btn primary full" id="compareBtn">启动 A/B 对比</button>
+        </section>
+        <section class="panel compare-result">
+          <div class="panel-head">
+            <h2>对比结果</h2>
+            <span class="chip" id="compareChip">未运行</span>
+          </div>
+          <div class="metric-grid wide">
+            <div><strong id="scoreA">--</strong><span>A 端得分</span></div>
+            <div><strong id="scoreB">--</strong><span>B 端得分</span></div>
+            <div><strong id="gapScore">--</strong><span>差距</span></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>探针</th><th>A</th><th>B</th><th>结论</th></tr></thead>
+              <tbody id="compareTable"><tr><td colspan="4">暂无数据</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="page" id="history">
+      <div class="history-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>本机快照</h2>
+            <button class="btn danger" id="clearHistoryBtn">清空历史</button>
+          </div>
+          <div class="history-list" id="historyList">暂无历史记录</div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><h2>趋势摘要</h2></div>
+          <div id="historySummary" class="diagnosis">选择历史记录可查看报告摘要。</div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

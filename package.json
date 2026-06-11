@@ -1,0 +1,15 @@
+{
+  "name": "modelscope-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI model API benchmark and configuration vault.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check app.js && node --check server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}

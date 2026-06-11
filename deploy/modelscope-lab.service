@@ -1,0 +1,16 @@
+[Unit]
+Description=ModelScope Lab
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/modelscope-lab
+EnvironmentFile=/opt/modelscope-lab/.env
+ExecStart=/usr/bin/node /opt/modelscope-lab/server.js
+Restart=always
+RestartSec=3
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
