@@ -49,6 +49,27 @@ sudo systemctl status modelscope-lab
 
 测试配置只保存在浏览器本机 `localStorage`，不会保存到服务器。
 
+## CentOS 7 安装 Node
+
+CentOS 7 的 `glibc` 版本较老，不能安装 Node 20。请使用 Node 16：
+
+```bash
+curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+yum install -y nodejs
+node -v
+npm -v
+```
+
+如果之前配置过 Node 20 源，先清理再安装：
+
+```bash
+yum remove -y nodejs nodesource-release
+rm -f /etc/yum.repos.d/nodesource*.repo
+yum clean all
+curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+yum install -y nodejs
+```
+
 ## Nginx 反代示例
 
 ```nginx
